@@ -53,7 +53,7 @@ def get_name_size(data):
 #get tasks 
 with open('assignment.txt','r')as f:
     tasks=f.read().split('\n')
-tasks=[task for task in tasks if task!='']
+tasks=[task for task in tasks if os.path.splitext(task)[1] == '.pb']
 
 #convert to uff and save log
 
@@ -68,7 +68,7 @@ for i,log in enumerate(logs):
     input_list, output_list=get_name_size(log)
     all_nodes.append((input_list, output_list))
     # write log
-    log_file = os.path.join(logs_dir,os.path.basename(tasks[i]).split('.')[0]+".txt")
+    log_file = os.path.join(logs_dir,os.path.basename(tasks[i]).split('.')[0]+"_uff.txt")
     if os.path.isfile(log_file):
         os.remove(log_file)
     with open(log_file, 'w') as f:
@@ -88,8 +88,9 @@ from tensorflow.python.platform import gfile
 
 
 
-
+# 这段的日志保存还没找到好办法去实现
 for i,node in enumerate(all_nodes):
+    tf.reset_default_graph()
     inputs,outputs=node
     outputs_name=outputs[0]
     inputs_detail=[(input[0],get_num(input[1:])) for input in inputs]
