@@ -8,7 +8,6 @@ import os
 table = pd.read_csv('table.csv')
 tasks = table.tasks.tolist()
 tasks = [task for task in tasks if os.path.splitext(task)[1] == '.uff']
-batchs = [1, 2, 5]
 # ./trtexec --uff=e_trainingFalse.opt.uff --output=latents_out --uffInput=images_in,512,512,3     --uffNHWC（可选） --batch =8
 logs_dir = './test/'
 # create log directory
@@ -20,7 +19,7 @@ def start_test(table, seq, batches):
     uff_name = table.iloc[seq].tasks
     input_nodes_str = table.iloc[seq].input_nodes
     output_nodes_name = table.iloc[seq].output_node
-    for batch in batchs:
+    for batch in batches:
         input_nodes_list = eval(input_nodes_str)  # str=>list
         input_params = ""  # concat uffInput params
         for node in input_nodes_list:
@@ -38,4 +37,5 @@ def start_test(table, seq, batches):
                 os.remove(log_file)
             with open(log_file, 'w') as f:
                 f.write(log)
-table.to_csv('table.csv')
+start_test(table, 1, [1])
+# table.to_csv('table.csv')

@@ -127,10 +127,12 @@ def pb2onnx_convert(all_nodes):
         pb_name = tasks[i]
         onnx_name = os.path.basename(pb_name).split('.')[0] + ".onnx"
         inputs, outputs = node
-        input_params = 'input=' + ',input='.join([','.join(i) for i in inputs]).replace('-', "")
-        input_params = input_params.replace("input=", " --input=")
-        output_nodes_name = outputs[0]
-        log_pb2onnx = subprocess.run("python3 -m  tf2onnx.convert{}  --output {} --inputs {}  --outputs {}".format(pb_name, onnx_name, input_params, output_nodes_name), shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
+        input_params = '--inputs ' + ',inputs='.join([i[0] + ":0" for i in inputs]).replace('-', "")
+        input_params = input_params.replace("inputs=", " --inputs ")
+        # print(input_params)
+        output_nodes_name = outputs[0]+":0"
+        # python3 -m  tf2onnx.convert   --input  /root/xu/new_multi_classfication_320_new.pb  --output /root/xu/stylegan2_generator_trainingFalse.opt.onnx --inputs input_ids:0  --inputs input_mask:0 --inputs segment_ids:0  --outputs output/ArgMax:0
+        log_pb2onnx = subprocess.run("python3 -m  tf2onnx.convert   --input  {}  --output {}{}--outputs {}".format(pb_name, onnx_name, input_params, output_nodes_name), shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
         # write log
         log_file = os.path.join(logs_dir, os.path.basename(pb_name).split('.')[0] + ".txt")
         if os.path.isfile(log_file):
