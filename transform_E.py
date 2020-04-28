@@ -89,7 +89,6 @@ from tensorflow.python.platform import gfile
 
 
 
-# 这段的日志保存还没找到好办法去实现
 for i,node in enumerate(all_nodes):
     tf.reset_default_graph()
     inputs,outputs=node
@@ -121,8 +120,6 @@ for i,node in enumerate(all_nodes):
 
     with gfile.FastGFile(tasks[i][:-3]+"_FP16.pb",'wb') as f:
             f.write(trt_graph.SerializeToString())
-def wash(strings):
-    return [abs(int(strs)) for strs in strings]
 
 def pb2onnx_convert(all_nodes):
     input_params = ""
@@ -130,9 +127,10 @@ def pb2onnx_convert(all_nodes):
         pb_name = tasks[i]
         onnx_name = os.path.basename(pb_name).split('.')[0] + ".onnx"
         inputs, outputs = node
-        input_params = ','.join([','.join(i) for i in inputs]).replace('-',"")
+        input_params = 'input=' + ',input='.join([','.join(i) for i in inputs]).replace('-', "")
+        input_params = input_params.replace("input=", " --input=")
         output_nodes_name = outputs[0]
-        log_pb2onnx = subprocess.run("python3 -m  tf2onnx.convert --input {}  --output {} --inputs {}  --outputs {}".format(pb_name, onnx_name, input_params, output_nodes_name), shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
+        log_pb2onnx = subprocess.run("python3 -m  tf2onnx.convert{}  --output {} --inputs {}  --outputs {}".format(pb_name, onnx_name, input_params, output_nodes_name), shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
         # write log
         log_file = os.path.join(logs_dir, os.path.basename(pb_name).split('.')[0] + ".txt")
         if os.path.isfile(log_file):

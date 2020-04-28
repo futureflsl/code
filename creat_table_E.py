@@ -25,7 +25,7 @@ tasks.extend(n_tasks_uff)
 tasks.extend(n_tasks_onnx)
 table=pd.DataFrame()
 table['tasks']=tasks
-table['output_node']=output_node*3
-table['input_nodes']=input_nodes_shape*3
+table['output_node']=output_node*4
+table['input_nodes']=input_nodes_shape*4
 table['step_time']=0
 table.to_csv('table.csv')
