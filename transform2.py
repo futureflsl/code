@@ -2,6 +2,7 @@
 import subprocess
 import re
 import os
+import pandas as pd
 
 
 def get_name_size(data):
@@ -121,3 +122,27 @@ for i,node in enumerate(all_nodes):
     with gfile.FastGFile(tasks[i][:-3]+"_FP16.pb",'wb') as f:
             f.write(trt_graph.SerializeToString())
 
+def pb2onnx(pb_name, onnx_name, input_nodes_str, output_nodes_name):
+    input_nodes_list = eval(input_nodes_str)  # str=>list
+    input_params = None  # concat uffInput params
+    for node in input_nodes_list:
+        input_params = input_params + node[0] + ","
+        node_size = node[1]
+        node_size=node_size[1:]
+        for size in node_size:
+            input_params+=size+","
+        input_params = input_params[:-1]  # remove redundent comma
+    return subprocess.run("python3 -m  tf2onnx.convert --input {}  --output {} --inputs {}  --outputs {}".format(pb_name, onnx_name, input_params, output_nodes_name), shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
+def pb2onnx_convert(table ,seq):
+    pb_name = table.iloc[seq].tasks
+    onnx_name = os.path.basename(pb_name).split('.')[0] + ".onnx"
+    log_pb2onnx = pb2onnx(pb_name, onnx_name,table.iloc[seq].input_nodes, table.iloc[seq].output_nodes)
+    # write log
+    log_file = os.path.join(logs_dir, os.path.basename(pb_name).split('.')[0] + ".txt")
+    if os.path.isfile(log_file):
+        os.remove(log_file)
+    with open(log_file, 'w') as f:
+        f.write(log_pb2onnx)
+
+table = pd.read_csv('table.csv')
+pb2onnx_convert(table, 7)

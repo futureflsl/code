@@ -22,10 +22,9 @@ def exec_uff(uff_name, input_nodes_str,batch):
     for node in input_nodes_list:
         input_params=input_params+node[0]+","
         node_size = node[1]
-        if len(node_size)==4:
-            input_params=input_params+'{},{},{},'.format(node_size[3],node_size[1],node_size[2])
-        elif len(node_size)==2:
-            input_params=input_params+'1,{},{},'.format(node_size[1],node_size[1])
+        node_size=node_size[1:]
+        for size in node_size:
+            input_params+=size+","
         input_params = input_params[:-1] # remove redundent comma
     return subprocess.run('./trtexec --uff={} --output=latents_out --uffInput={} --uffNHWC --batch ={}'.format(uff_name,input_params,batch), shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
 
